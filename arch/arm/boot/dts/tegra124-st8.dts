@@ -220,8 +220,10 @@
 
 					ldo3_reg: ldo3 {
 						regulator-name = "vdd-touch";
-						regulator-min-microvolt = <3000000>;
-						regulator-max-microvolt = <3000000>;
+						regulator-min-microvolt = <3300000>;
+						regulator-max-microvolt = <3300000>;
+						regulator-enable-ramp-delay = <3000>;
+						ti,disable-pull-down;
 					};
 
 					ldo4 {
@@ -355,6 +357,11 @@
 			gpio = <&gpio TEGRA_GPIO(K, 6) 0>;
 			enable-active-high;
 			vin-supply = <&palmas_smps10_out1>;
+		};
+
+		regulator@8  {
+			vin-supply = <&ldo3_reg>;
+			regulator-disable-parent-after-enable;
 		};
 	};
 };

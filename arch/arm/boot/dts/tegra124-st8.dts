@@ -45,6 +45,25 @@
 		format = "a8b8g8r8";
 	};
 
+	/* Expansion GEN2_I2C_* */
+	i2c@0,7000c400 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	/* Expansion CAM_I2C_* */
+	i2c@0,7000c500 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+	/* HDMI DDC */
+	hdmi_ddc: i2c@0,7000c700 {
+		status = "okay";
+		clock-frequency = <100000>;
+	};
+
+/*
 	i2c@0,7000d000 {
 		status = "okay";
 		clock-frequency = <400000>;
@@ -115,7 +134,7 @@
 				system-pmic-power-off;
 			};
 
-/*			palmas_ldousb_in {
+			palmas_ldousb_in {
 				compatible = "ti,palmas-ldousb-in";
 				ti,ldousb-in-threshold-voltage = <3500000>;
 				ti,threshold-voltage-tolerance = <100000>;
@@ -123,7 +142,7 @@
 				ldousb-in1-supply = <&vdd_ac_bat_reg>;
 				ldousb-in2-supply = <&palmas_smps10_out2>;
 			};
-*/
+
 
 			clock {
 				compatible = "ti,palmas-clk";
@@ -277,6 +296,22 @@
 			};
 		};
 	};
+*/
+	/* Expansion TS_SPI_* */
+	spi@0,7000d400 {
+		status = "okay";
+	};
+
+	/* Internal SPI */
+	spi@0,7000da00 {
+		status = "okay";
+		spi-max-frequency = <25000000>;
+		spi-flash@0 {
+			compatible = "winbond,w25q32dw";
+			reg = <0>;
+			spi-max-frequency = <20000000>;
+		};
+	};
 
 	pmc@0,7000e400 {
 		nvidia,invert-interrupt;
@@ -290,6 +325,51 @@
 	};
 
 
+	/* SD card */
+	sdhci@0,700b0400 {
+		status = "okay";
+		cd-gpios = <&gpio TEGRA_GPIO(V, 2) GPIO_ACTIVE_LOW>;
+		power-gpios = <&gpio TEGRA_GPIO(R, 0) GPIO_ACTIVE_HIGH>;
+		wp-gpios = <&gpio TEGRA_GPIO(Q, 4) GPIO_ACTIVE_HIGH>;
+		bus-width = <4>;
+	//	vqmmc-supply = <&palmas_smps8>;
+	};
+	/* eMMC */
+	sdhci@0,700b0600 {
+		status = "okay";
+		bus-width = <8>;
+		non-removable;
+	};
+
+	ahub@0,70300000 {
+		i2s@0,70301100 {
+			status = "okay";
+		};
+	};
+
+	/* mini-PCIe USB */
+	usb@0,7d004000 {
+		status = "okay";
+	};
+
+	usb-phy@0,7d004000 {
+		status = "okay";
+	};
+
+
+	gpio-keys {
+		compatible = "gpio-keys";
+
+		power {
+			label = "Power";
+			gpios = <&gpio TEGRA_GPIO(Q, 0) GPIO_ACTIVE_LOW>;
+			linux,code = <KEY_POWER>;
+			debounce-interval = <10>;
+			gpio-key,wakeup;
+		};
+	};
+
+/*
 	regulators {
 		compatible = "simple-bus";
 		#address-cells = <1>;
@@ -376,4 +456,5 @@
 			regulator-disable-parent-after-enable;
 		};
 	};
+*/
 };

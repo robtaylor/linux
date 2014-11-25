@@ -8,7 +8,7 @@
 	compatible = "nvidia,st8", "nvidia,tegra124";
 
 	aliases {
-		rtc0 = "/i2c@0,7000d000/pmic@40";
+		rtc0 = "/i2c@0,7000d000/pmic@58";
 		rtc1 = "/rtc@0,7000e000";
 	};
 
@@ -44,6 +44,317 @@
 		stride = <(1216 * 4)>;
 		format = "a8b8g8r8";
 	};
+
+	i2c@0,7000d000 {
+		status = "okay";
+		clock-frequency = <400000>;
+		palmas: pmic@58 {
+			compatible = "ti,palmas";
+			reg = <0x58>;
+			interrupts = <GIC_SPI 86 IRQ_TYPE_LEVEL_LOW>;
+
+			#interrupt-cells = <2>;
+			interrupt-controller;
+
+			ti,system-power-controller;
+
+			palmas_gpio: gpio {
+				compatible = "ti,palmas-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+			};
+
+			rtc {
+				compatible = "ti,palmas-rtc";
+				interrupt-parent = <&palmas>;
+				interrupts = <8 0>;
+			};
+
+			pinmux {
+				compatible = "ti,tps65913-pinctrl";
+				pinctrl-names = "default";
+				pinctrl-0 = <&palmas_default>;
+
+				palmas_default: pinmux {
+					powergood {
+						pins = "powergood";
+						function = "powergood";
+					};
+
+					vac {
+						pins = "vac";
+						function = "vac";
+					};
+
+					pin_gpio0 {
+						pins = "gpio0";
+						function = "id";
+						bias-pull-up;
+					};
+
+					pin_gpio1 {
+						pins = "gpio1";
+						function = "gpio";
+						bias-disable;
+					};
+
+					pin_gpio6 {
+						pins = "gpio2", "gpio3", "gpio4", "gpio6", "gpio7";
+						function = "gpio";
+					};
+
+					pin_gpio5 {
+						pins = "gpio5";
+						function = "clk32kgaudio";
+					};
+				};
+			};
+
+			power_pm {
+				compatible = "ti,palmas-pm";
+				system-pmic-power-off;
+			};
+
+/*			palmas_ldousb_in {
+				compatible = "ti,palmas-ldousb-in";
+				ti,ldousb-in-threshold-voltage = <3500000>;
+				ti,threshold-voltage-tolerance = <100000>;
+				ti,enable-in1-above-threshold;
+				ldousb-in1-supply = <&vdd_ac_bat_reg>;
+				ldousb-in2-supply = <&palmas_smps10_out2>;
+			};
+*/
+
+			clock {
+				compatible = "ti,palmas-clk";
+
+				clk32k_kg {
+					ti,clock-boot-enable;
+				};
+
+				clk32k_kg_audio {
+					ti,clock-boot-enable;
+				};
+			};
+
+			pmic {
+				compatible = "ti,tps65913-pmic", "ti,palmas-pmic";
+				ldo1-in-supply = <&palmas_smps6>;
+				ldo5-in-supply = <&palmas_smps8>;
+				ldo9-in-supply = <&palmas_smps9>;
+				ldoln-in-supply = <&palmas_smps10_out2>;
+				ldousb-in-supply = <&palmas_smps10_out2>;
+
+				regulators {
+					smps123 {
+						regulator-name = "vdd-cpu";
+						regulator-min-microvolt = <700000>;
+						regulator-max-microvolt = <1400000>;
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <1>;
+						ti,config-flags = <8>;
+					};
+
+					smps45 {
+						regulator-name = "vdd-gpu";
+						regulator-min-microvolt = <700000>;
+						regulator-max-microvolt = <1400000>;
+						regulator-init-microvolt = <1000000>;
+						regulator-boot-on;
+					};
+
+					palmas_smps6: smps6 {
+						regulator-name = "vddio-ddr";
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					smps7 {
+						regulator-name = "vdd-core";
+						regulator-min-microvolt = <700000>;
+						regulator-max-microvolt = <1400000>;
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <3>;
+					};
+
+					palmas_smps8: smps8 {
+						regulator-name = "vdd-1v8";
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					palmas_smps9: smps9 {
+						regulator-name = "vdd-snsr";
+						regulator-min-microvolt = <3300000>;
+						regulator-max-microvolt = <3300000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					palmas_smps10_out1: smps10_out1 {
+						regulator-name = "vdd-out1-5v0";
+						regulator-min-microvolt = <5000000>;
+						regulator-max-microvolt = <5000000>;
+					};
+
+					palmas_smps10_out2: smps10_out2 {
+						regulator-name = "vdd-out2-5v0";
+						regulator-min-microvolt = <5000000>;
+						regulator-max-microvolt = <5000000>;
+					};
+
+					ldo1 {
+						regulator-name = "avdd-pll";
+						regulator-always-on;
+						regulator-boot-on;
+						ti,roof-floor = <3>;
+					};
+
+					ldo2 {
+						regulator-name = "avdd-lcd";
+						regulator-min-microvolt = <3300000>;
+						regulator-max-microvolt = <3300000>;
+					};
+
+					ldo3_reg: ldo3 {
+						regulator-name = "vdd-touch";
+						regulator-min-microvolt = <3000000>;
+						regulator-max-microvolt = <3000000>;
+					};
+
+					ldo4 {
+						regulator-name = "avdd-cam1";
+						regulator-min-microvolt = <2700000>;
+						regulator-max-microvolt = <2700000>;
+					};
+
+					ldo5_reg: ldo5 {
+						regulator-name = "avdd-dsi-csi";
+					};
+
+					vpp_fuse: ldo6 {
+						regulator-name = "vpp-fuse";
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <1800000>;
+					};
+
+					ldo7 {
+						regulator-name = "avdd-cam-af";
+						regulator-min-microvolt = <2700000>;
+						regulator-max-microvolt = <2700000>;
+					};
+
+					ldo8 {
+						regulator-name = "vdd-rtc";
+						regulator-min-microvolt = <950000>;
+						regulator-max-microvolt = <950000>;
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					ldo9 {
+						regulator-name = "vddio-sdmmc-2";
+						regulator-min-microvolt = <1800000>;
+						regulator-max-microvolt = <3300000>;
+					};
+
+					ldoln {
+						regulator-name = "vddio-hv";
+						regulator-always-on;
+						regulator-boot-on;
+					};
+
+					ldousb_reg: ldousb {
+						regulator-name = "avdd-usb";
+						regulator-always-on;
+						regulator-boot-on;
+					};
+				};
+			};
+		};
+	};
+
+	regulators {
+		compatible = "simple-bus";
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		vdd_ac_bat_reg: regulator@0 {
+			compatible = "regulator-fixed";
+			reg = <0>;
+			regulator-name = "vdd_ac_bat";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			regulator-always-on;
+		};
+
+		en_lcd_bl: regulator@1 {
+			compatible = "regulator-fixed-sync";
+			reg = <1>;
+			regulator-name = "en-lcd-bl";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			enable-active-high;
+			gpio = <&gpio TEGRA_GPIO(H, 2) 0>;
+			regulator-boot-on;
+		};
+
+		vddio_sd: regulator@2 {
+			compatible = "regulator-fixed-sync";
+			reg = <2>;
+			regulator-name = "vddio_sd";
+			regulator-min-microvolt = <3300000>;
+			regulator-max-microvolt = <3300000>;
+			gpio = <&gpio TEGRA_GPIO(R, 0) GPIO_ACTIVE_HIGH>;
+			enable-active-high;
+			vin-supply = <&palmas_smps9>;
+		};
+
+		vddio_dvdd_lcd: regulator@3 {
+			compatible = "regulator-fixed-sync";
+			reg = <3>;
+			regulator-name = "vddio_dvdd_lcd";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			gpio = <&palmas_gpio 6 0>;
+			enable-active-high;
+			regulator-boot-on;
+			vin-supply = <&palmas_smps8>;
+		};
+
+		vdd_cam_af: regulator@4 {
+			compatible = "regulator-fixed-sync";
+			reg = <4>;
+			regulator-name = "vdd_cam_af";
+			regulator-min-microvolt = <1800000>;
+			regulator-max-microvolt = <1800000>;
+			gpio = <&palmas_gpio 4 0>;
+			enable-active-high;
+			vin-supply = <&palmas_smps8>;
+		};
+
+		vdd_hdmi_n5: regulator@5 {
+			compatible = "regulator-fixed-sync";
+			reg = <5>;
+			regulator-name = "vdd-hdmi-n5";
+			regulator-min-microvolt = <1200000>;
+			regulator-max-microvolt = <1200000>;
+			enable-active-high;
+			gpio = <&gpio TEGRA_GPIO(N, 5) 0>;
+			vin-supply = <&palmas_smps6>;
+		};
+
+		vddio_hdmi_5v0: regulator@6 {
+			compatible = "regulator-fixed-sync";
+			reg = <6>;
+			regulator-name = "vddio_hdmi_5v0";
+			regulator-min-microvolt = <5000000>;
+			regulator-max-microvolt = <5000000>;
+			gpio = <&gpio TEGRA_GPIO(K, 6) 0>;
+			enable-active-high;
+			vin-supply = <&palmas_smps10_out1>;
+		};
+	};
 };
-
-

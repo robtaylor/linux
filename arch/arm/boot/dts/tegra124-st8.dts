@@ -73,10 +73,10 @@
 			nvidia,panel = <&panel>;
 		};
 
-		dsi@54300000 {
+		dsi@0,54300000 {
 			status = "okay";
 
-			vdd-supply = <&vdd_1v2_ap>;
+			vdd-supply = <&avdd_dsi_csi>;
 
 		};
 	
@@ -321,8 +321,10 @@
 						regulator-max-microvolt = <2700000>;
 					};
 
-					ldo5_reg: ldo5 {
+					avdd_dsi_csi: ldo5 {
 						regulator-name = "avdd-dsi-csi";
+					//	regulator-min-microvolt = <1200000>;
+					//	regulator-max-microvolt = <1200000>;
 					};
 
 					vpp_fuse: ldo6 {
